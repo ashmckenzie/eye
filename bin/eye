@@ -1,0 +1,30 @@
+#!/usr/bin/env ruby
+
+require File.expand_path('../../lib/init', __FILE__)
+
+VALID_ENVS = Ey::Config.valid_environments
+VALID_TYPES = Ey::Config.valid_types
+
+opts = Trollop::options do
+  opt :env, "Environment to lookup", :type => :string
+  opt :type, "Server type to lookup", :type => :string
+  opt :force, "Bypass cached results and get a fresh set", :default => false
+end
+
+unless VALID_ENVS.include?(opts[:env])
+  VALID_ENVS.each { |x| puts x }
+  puts
+  Trollop::die :env, "must be a valid environment"
+end
+
+unless VALID_TYPES.include?(opts[:type])
+  VALID_TYPES.each { |x| puts x }
+  puts
+  Trollop::die :type, "must be a valid type"
+end
+
+e = Ey::Servers.new(opts[:env], opts[:force])
+
+e.send(opts[:type]).each do |x|
+  puts x.hostname
+end
