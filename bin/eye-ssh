@@ -5,22 +5,25 @@ require File.expand_path('../../lib/init', __FILE__)
 VALID_SSH_ENVS = Ey::Config.valid_ssh_environments
 
 opts = Trollop::options do
+  opt :servers, "List all known servers"
   opt :force, "Bypass cached results and get a fresh set", :default => false
 end
 
-unless VALID_SSH_ENVS.include?(ARGV[0])
-  VALID_SSH_ENVS.each { |x| puts x }
-  puts
-  Trollop::die "Must be a valid ssh environment"
+if opts[:servers]
+  puts VALID_SSH_ENVS.join(' ')
+else
+  unless VALID_SSH_ENVS.include?(ARGV[0])
+    VALID_SSH_ENVS.each { |x| puts x }
+    puts
+    Trollop::die "Must be a valid ssh environment"
+  end
+
+  env, type = ARGV[0].split(/-/)
+
+  e = Ey::Servers.new(env, opts[:force])
+  host = e.send(type).first
+
+  command = "ssh deploy@#{host.hostname} #{ARGV[1]}"
+  STDERR.puts "- Attempting to SSH to #{env}'s #{type} (#{command})"
+  system(command)
 end
-
-env, type = ARGV[0].split(/-/)
-
-e = Ey::Servers.new(env, opts[:force])
-host = e.send(type).first
-
-command = "ssh://deploy@#{host.hostname}"
-
-STDERR.puts "- Attempting to SSH to #{env}'s #{type} (#{command})"
-
-`open #{command}`
