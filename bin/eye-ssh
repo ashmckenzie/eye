@@ -23,7 +23,7 @@ else
   e = Ey::Servers.new(env, opts[:force])
   host = e.send(type).first
 
-  command = "ssh deploy@#{host.hostname} #{ARGV[1]}"
+  command = "ssh -A deploy@#{host.hostname} #{ARGV[1]}"
   STDERR.puts "- Attempting to SSH to #{env}'s #{type} (#{command})"
   system(command)
 end
